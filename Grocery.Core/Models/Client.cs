@@ -10,5 +10,7 @@ namespace Grocery.Core.Models
             EmailAddress=emailAddress;
             Password=password;
         }
+
+        public Role Role { get; set; } = Role.None;
     }
 }
