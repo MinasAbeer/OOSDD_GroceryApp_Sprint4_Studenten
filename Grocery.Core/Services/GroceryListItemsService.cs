@@ -54,28 +54,24 @@ namespace Grocery.Core.Services
             var allItems = _groceriesRepository.GetAll() ?? new List<GroceryListItem>();
 
             var grouped = allItems
-                .GroupBy(i => i.ProductId)
-                .Select(g => new { ProductId = g.Key, Count = g.Count() })
-                .OrderByDescending(g => g.Count)
+                .GroupBy(p => p.ProductId)
+                .Select(g => new { ProductId = g.Key, TotalSold = g.Sum(s => s.Amount) })
+                .OrderByDescending(g => g.TotalSold)
                 .Take(topX)
                 .ToList();
 
             var result = new List<BestSellingProducts>();
             int rank = 1;
-
             foreach (var g in grouped)
             {
                 var product = _productRepository.Get(g.ProductId);
-                string name = product?.Name ?? string.Empty;
-                int stock = 0;
-
-                if (product != null)
-                { 
-                    stock = product.Stock;
-                }
-
-                result.Add(new BestSellingProducts(g.ProductId, name, stock, g.Count, rank));
-                rank++;
+                result.Add(new BestSellingProducts(
+                    g.ProductId,
+                    product?.Name ?? string.Empty,
+                    product?.Stock ?? 0,
+                    g.TotalSold,
+                    rank++
+                ));
             }
 
             return result;
